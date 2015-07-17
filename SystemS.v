@@ -29,7 +29,7 @@ Inductive eval (A : Set) : strategy A -> A -> option A -> Prop :=
     forall s1 s2 t t' t'',
       eval s1 t (Some t') ->
       eval s2 t' (Some t'') ->
-      eval (s1;s2) t' (Some t'')
+      eval (s1;s2) t (Some t'')
 | E_Seq2 :
     forall s1 s2 t,
       eval s1 t None ->
@@ -73,20 +73,6 @@ Definition succeeds A (s : strategy A) (t : A) : Prop :=
 Definition fails A (s : strategy A) (t : A) : Prop :=
   eval s t None.
 
-(*
-Fixpoint without_choice A (s : strategy A) : bool :=
-  match s with
-    | SRule _ => true
-    | SIdentity => true
-    | SFailure => true
-    | STest s => without_choice s
-    | SNeg s => without_choice s
-    | SSeq s1 s2 => andb (without_choice s1) (without_choice s2)
-    | SLeftChoice s1 s2 => andb (without_choice s1) (without_choice s2)
-    | SChoice _ _ => false
-  end.
-*)
-
 Inductive without_choice A : strategy A -> Prop :=
 | WC_Rule : forall r, without_choice (SRule r)
 | WC_Id : without_choice (SIdentity _)
@@ -113,24 +99,26 @@ Theorem without_choice_deterministic :
 Proof.
   unfold deterministic.
   induction s; intros WC t x y Hx Hy;
-  inversion WC; subst;
+  inversion WC; subst; clear WC;
 
   (* SRule, SIdentity, SFailure *)
-  try (inversion Hx; inversion Hy; subst; congruence).
+  try (inversion Hx; inversion Hy; subst; congruence);
 
-  (* STest *)
+  (* STest, SNeg *)
   try (inversion Hx; inversion Hy; auto; subst;
        assert (Some t' = None); apply IHs with t; congruence).
 
-  (* SNeg *)
-  inversion Hx; inversion Hy; auto; subst;
-  assert (Some t' = None); apply IHs with t; congruence.
-
   (* SSeq *)
-  
+  inversion Hx; inversion Hy; auto; subst;
+  try (assert (Some t' = None); apply IHs1 with t; congruence);
+  try (assert (Some t'0 = Some t') as H by (apply IHs1 with t; assumption);
+       inversion H; subst; clear H;
+       apply IHs2 with t'; assumption).
 
-Lemma fact1:
-  forall A (s : strategy A) t, succeeds s t -> ~fails s t.
-Proof.
-
-  
+  (* SLeftChoice *)
+  inversion Hx; inversion Hy; auto; subst;
+  try (apply IHs1 with t; assumption);
+  try (apply IHs2 with t; assumption).
+  assert (Some t' = None); apply IHs1 with t; congruence.
+  assert (Some t'0 = None); apply IHs1 with t; congruence.
+Qed.

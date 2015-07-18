@@ -18,3 +18,8 @@ _build/
 # oasis generated files
 setup.data
 setup.log
+
+# OCamlMakefile generated
+._bcdi/
+._d/
+._ncdi/

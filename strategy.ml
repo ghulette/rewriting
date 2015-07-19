@@ -55,7 +55,10 @@ module Traversal (T : Term) =
         s (T.ith i t) >>= fun ti' ->
         Some (T.with_ith i ti' t)
 
-    let congruence f ss t =
+    let constructor g t =
+      if T.constructor t = g then Some t else None
+             
+    let congruence ss t =
       let rec congruence_aux acc = function
         | [] -> Some (List.rev acc)
         | (s,t)::sts ->
@@ -63,7 +66,7 @@ module Traversal (T : Term) =
            congruence_aux (t'::acc) sts
       in
       let ts = T.subterms t in
-      if T.constructor t <> f || List.(length ts <> length ss) then None else
+      if List.(length ts <> length ss) then None else
         congruence_aux [] (List.combine ss ts) >>= fun ts' ->
         Some (T.with_subterms ts' t)
   end

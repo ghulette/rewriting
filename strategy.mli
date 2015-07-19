@@ -25,5 +25,6 @@ module type Term =
 module Traversal (Term : Term) :
 sig
   val path : int -> Term.t t -> Term.t t
-  val congruence : Term.constructor -> Term.t t list -> Term.t t
+  val constructor : Term.constructor -> Term.t t
+  val congruence : Term.t t list -> Term.t t
 end

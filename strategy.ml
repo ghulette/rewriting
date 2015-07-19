@@ -28,26 +28,52 @@ let left_choice s1 s2 t =
   | Some t' -> Some t'
   | None -> s2 t
 
-module type Term =
-  sig
-    type 'a t
+(* val bind : 'a option -> ('a -> 'b option) -> 'b option *)
+let bind mx f = 
+  match mx with
+  | Some x -> f x
+  | None -> None
 
-    val make : 'a -> 'a t list -> 'a t
-    val constructor : 'a t -> 'a
-    val children : 'a t -> 'a t list
+let (>>=) = bind
+
+
+module type Eq = sig
+    type t
+    val eq : t -> t -> bool
+  end
+               
+module type Term = sig
+    type t
+    type constructor
+
+    val constructor : t -> constructor
+    val subterms : t -> t list
+    val with_subterms : t list -> t -> t
+    val arity : t -> int
+    val ith : int -> t -> t
+    val with_ith : int -> t -> t -> t
+    val eq : t -> t -> bool
   end
 
 module Traversal (T : Term) =
   struct
-    let path i s t =
-      let ts = Array.of_list (T.children t) in
-      match s ts.(i) with
-      | Some ti' ->
-         ts.(i) <- ti';
-         let t' = T.make (T.constructor t) (Array.to_list ts) in
-         Some t'
-      | None -> None
-      | exception (Invalid_argument _) -> None
-  end
 
+    let path i s t =
+      match s (T.ith i t) with
+      | Some ti' -> Some (T.with_ith i ti' t)
+      | None -> None
+      | exception _ -> None
+
+    let congruence f ss t =
+      let rec congruence_aux acc = function
+        | [] -> Some (List.rev acc)
+        | (s,t)::sts -> s t >>= fun t' -> congruence_aux (t'::acc) sts
+      in                       
+      if T.constructor t <> f then None else
+        let ts = T.subterms t in
+        match congruence_aux [] (List.combine ss ts) with
+        | None -> None
+        | Some ts' -> Some (T.with_subterms ts' t)
+        | exception _ -> None
+  end
     

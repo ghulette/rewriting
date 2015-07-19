@@ -1,4 +1,4 @@
-SOURCES = strategy.mli strategy.ml
+SOURCES = option.mli option.ml strategy.mli strategy.ml
 RESULT = strategy
 
 ANNOTATE = yes

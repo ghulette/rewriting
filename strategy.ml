@@ -1,5 +1,4 @@
 type 'a t = 'a -> 'a option
-
 type 'a rule = 'a -> 'a option
 
 let rule r = r
@@ -28,15 +27,6 @@ let left_choice s1 s2 t =
   | Some t' -> Some t'
   | None -> s2 t
 
-(* val bind : 'a option -> ('a -> 'b option) -> 'b option *)
-let bind mx f = 
-  match mx with
-  | Some x -> f x
-  | None -> None
-
-let (>>=) = bind
-
-
 module type Eq = sig
     type t
     val eq : t -> t -> bool
@@ -58,22 +48,23 @@ module type Term = sig
 module Traversal (T : Term) =
   struct
 
+    open Option.Infix
+    
     let path i s t =
-      match s (T.ith i t) with
-      | Some ti' -> Some (T.with_ith i ti' t)
-      | None -> None
-      | exception _ -> None
+      if i < 0 || i >= T.arity t then None else
+        s (T.ith i t) >>= fun ti' ->
+        Some (T.with_ith i ti' t)
 
     let congruence f ss t =
       let rec congruence_aux acc = function
         | [] -> Some (List.rev acc)
-        | (s,t)::sts -> s t >>= fun t' -> congruence_aux (t'::acc) sts
-      in                       
-      if T.constructor t <> f then None else
-        let ts = T.subterms t in
-        match congruence_aux [] (List.combine ss ts) with
-        | None -> None
-        | Some ts' -> Some (T.with_subterms ts' t)
-        | exception _ -> None
+        | (s,t)::sts ->
+           s t >>= fun t' ->
+           congruence_aux (t'::acc) sts
+      in
+      let ts = T.subterms t in
+      if T.constructor t <> f || List.(length ts <> length ss) then None else
+        congruence_aux [] (List.combine ss ts) >>= fun ts' ->
+        Some (T.with_subterms ts' t)
   end
     

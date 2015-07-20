@@ -11,20 +11,18 @@ val left_choice : 'a t -> 'a t -> 'a t
 
 module type Term =
   sig
-    type t
-    type constructor
-    val constructor : t -> constructor
-    val subterms : t -> t list
-    val with_subterms : t list -> t -> t
-    val arity : t -> int
-    val ith : int -> t -> t
-    val with_ith : int -> t -> t -> t
-    val eq : t -> t -> bool
+    type 'a t
+    val constructor : 'a t -> 'a
+    val subterms : 'a t -> 'a t list
+    val with_subterms : 'a t list -> 'a t -> 'a t
+    val arity : 'a t -> int
+    val ith : int -> 'a t -> 'a t
+    val with_ith : int -> 'a t -> 'a t -> 'a t
   end
     
 module Traversal (Term : Term) :
 sig
-  val path : int -> Term.t t -> Term.t t
-  val constructor : Term.constructor -> Term.t t
-  val congruence : Term.t t list -> Term.t t
+  val path : int -> 'a Term.t t -> 'a Term.t t
+  val constructor : 'a -> 'a Term.t t
+  val congruence : 'a Term.t t list -> 'a t
 end

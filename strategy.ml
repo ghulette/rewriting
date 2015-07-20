@@ -49,7 +49,9 @@ module Traversal (T : Term) =
   struct
 
     open Option.Infix
-    
+
+    type 'a t = 'a Term.t t
+           
     let path i s t =
       if i < 0 || i >= T.arity t then None else
         s (T.ith i t) >>= fun ti' ->
@@ -61,13 +63,29 @@ module Traversal (T : Term) =
     let congruence ss t =
       let rec congruence_aux acc = function
         | [] -> Some (List.rev acc)
-        | (s,t)::sts ->
-           s t >>= fun t' ->
-           congruence_aux (t'::acc) sts
+        | (si,ti)::stis ->
+           si ti >>= fun ti' ->
+           congruence_aux (ti'::acc) stis
       in
       let ts = T.subterms t in
       if List.(length ts <> length ss) then None else
         congruence_aux [] (List.combine ss ts) >>= fun ts' ->
         Some (T.with_subterms ts' t)
+
+    let all s t =
+      let rec all_aux acc = function
+        | [] -> Some (List.rev acc)
+        | ti::tis ->
+           match s ti with
+           | Some ti' -> all_aux (ti'::acc) tis
+           | None -> None
+      in
+      let ts = T.subterms t in
+      all_aux [] ts >>= fun ts' ->
+      Some (T.with_subterms ts' t)
+            
+    let one s t = None
+    let some s t = None
+      
   end
     

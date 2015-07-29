@@ -1,7 +1,6 @@
 SOURCES = option.mli option.ml \
-          term.mli term.ml \
           strategy.mli strategy.ml \
-          examples.ml
+          traverse.mli traverse.ml
 RESULT = strategy
 
 ANNOTATE = yes

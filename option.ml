@@ -7,4 +7,3 @@ module Infix =
   struct
     let (>>=) = bind
   end
-

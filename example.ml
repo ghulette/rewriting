@@ -28,8 +28,6 @@ module Term =
   struct
     type 'a t = 'a formula
 
-    open Option.Infix
-
     let on_children s =
       let inner = function
         | Not p -> Traverse.on1 s mk_not p

@@ -2,6 +2,8 @@ type 'a strategy
 type 'a t = 'a strategy
 type 'a rule = 'a -> 'a option
 
+val apply : 'a t -> 'a -> 'a option
+
 val rule : 'a rule -> 'a t
 val identity : 'a t
 val fail : 'a t

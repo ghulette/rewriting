@@ -2,6 +2,8 @@ type 'a strategy = 'a -> 'a option
 type 'a t = 'a strategy
 type 'a rule = 'a -> 'a option
 
+let apply s t = s t
+
 let rule r = r
 
 let identity t = Some t
@@ -30,8 +32,8 @@ let left_choice s1 s2 t =
 
 module Infix =
   struct
-    let (>>) = sequence
-    let (<+) = left_choice
+    let ( >> ) = sequence
+    let ( <+ ) = left_choice
   end
 
 open Option.Infix

@@ -34,8 +34,12 @@ module Term =
       let inner = function
         | Not p -> Traverse.on1 s mk_not p
         | And (p,q) -> Traverse.on2 s mk_and p q
+        | Or (p,q) -> Traverse.on2 s mk_or p q
+        | Impl (p,q) -> Traverse.on2 s mk_impl p q
+        | Equiv (p,q) -> Traverse.on2 s mk_equiv p q
         | fm -> Some fm
-      in Strategy.rule inner
+      in
+      Strategy.rule inner
   end
 
 module T = Traverse.Make (Term)
